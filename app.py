@@ -62,8 +62,12 @@ def _music_path(mode, upload):
     uploaded = _file_path(upload)
     if uploaded:
         return uploaded
-    if mode == "Default ambient":
-        return _first_existing([str(MUSIC_DIR / "ambient_loop.mp3")])
+    if mode == "Default ambient" and MUSIC_DIR.exists():
+        music_files = sorted([
+            p for p in MUSIC_DIR.iterdir()
+            if p.is_file() and p.suffix.lower() in {".mp3", ".wav", ".m4a", ".aac"} and p.stat().st_size > 0
+        ])
+        return str(music_files[0]) if music_files else None
     return None
 
 

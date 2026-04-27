@@ -1,3 +1,14 @@
+---
+title: 🎬 Brainrot Video Generator
+emoji: 🎬
+colorFrom: purple
+colorTo: blue
+sdk: gradio
+sdk_version: 6.13.0
+app_file: app.py
+pinned: false
+---
+
 # AI Audio Storyteller
 
 This repository contains an upgraded Gradio app that keeps the existing brainrot/captions generator core concepts and adds an AI Audio Storyteller layer on top.
@@ -58,6 +69,8 @@ New styles added:
 
 Every caption path prefers `assets/fonts/NotoSans-Master-Bold.ttf` when it exists.
 
+Missing hosted TTF files auto-download from the official Noto Fonts GitHub raw URLs. If hosted downloads fail, the app falls back to compatible system fonts found with `fc-match` and still creates the master font when at least one source font is available.
+
 ## Aspect ratios
 
 The UI supports:
@@ -91,7 +104,7 @@ FFmpeg and FFprobe must be available on `PATH`.
 The app creates these folders automatically:
 
 - `assets/fonts/` — font files and `NotoSans-Master-Bold.ttf`.
-- `assets/music/` — default ambient loop if generated successfully.
+- `assets/music/` — default background music auto-downloaded when missing, with a generated ambient loop fallback if downloads fail.
 - `assets/footage/` — optional stock/background videos for random-video mode.
 - `assets/overlays/` — optional character overlays.
 - `outputs/` — rendered MP4 exports.
