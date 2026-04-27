@@ -1,0 +1,47 @@
+# Python/runtime caches
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.cache/
+
+# Virtual environments and packaging
+.venv/
+venv/
+env/
+ENV/
+*.egg-info/
+build/
+dist/
+
+# Runtime outputs and temporary render files
+outputs/
+temp/
+tmp/
+.tmp/
+*.tmp
+*.log
+
+# Runtime uploads/generated assets
+assets/uploads/
+assets/generated/
+assets/ai_backgrounds/
+outputs/ai_backgrounds/
+outputs/videos/
+
+# Generated media
+*.mp4
+*.mov
+*.webm
+*.mp3
+*.wav
+*.m4a
+*.aac
+
+# Local config
+.env
+.env.*
+!.env.example
+.DS_Store
