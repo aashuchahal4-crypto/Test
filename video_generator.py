@@ -141,7 +141,7 @@ def create_caption_image(text, font_path, output_path, width=1080, height=1920, 
         fill = (255, 255, 255, 255)
         stroke = (0, 221, 255, 230)
     elif caption_style == "Karaoke-Green":
-        fill = (171, 255, 64, 255)
+        fill = (225, 235, 220, 255)
         panel_fill = (0, 0, 0, 125)
     elif caption_style == "Minimal-Shadow":
         stroke = (0, 0, 0, 150)
@@ -167,26 +167,27 @@ def create_caption_image(text, font_path, output_path, width=1080, height=1920, 
         words = re.findall(r"[\w\u0900-\u097f]{5,}", text)
         keyword_set = set(words[:3])
 
+    words_seen = 0
     for line in lines:
         bbox = _text_bbox(draw, (0, 0), line, font, stroke_width=stroke_width)
         x = int((width - (bbox[2] - bbox[0])) / 2)
-        if caption_style in {"Word-Highlight", "Bold-Keywords"}:
+        if caption_style in {"Word-Highlight", "Karaoke-Green", "Bold-Keywords"}:
             words = line.split()
             cursor = x
             total_words = max(1, len((text or "").split()))
-            highlight_count = max(1, int(total_words * max(0.0, min(1.0, highlight_fraction)))) if caption_style == "Word-Highlight" else 0
-            seen_before = len(" ".join(" ".join(lines[:lines.index(line)]).split()).split()) if line in lines else 0
+            highlight_count = max(1, int(total_words * max(0.0, min(1.0, highlight_fraction)))) if caption_style in {"Word-Highlight", "Karaoke-Green"} else 0
             for idx, word in enumerate(words):
                 clean = re.sub(r"[^\w\u0900-\u097f]", "", word)
                 color = fill
-                if caption_style == "Word-Highlight" and seen_before + idx < highlight_count:
-                    color = (255, 223, 0, 255)
+                if caption_style in {"Word-Highlight", "Karaoke-Green"} and words_seen + idx < highlight_count:
+                    color = (255, 223, 0, 255) if caption_style == "Word-Highlight" else (171, 255, 64, 255)
                     wb = _text_bbox(draw, (cursor, y), word, font, stroke_width=stroke_width)
-                    draw.rounded_rectangle((wb[0] - 8, wb[1], wb[2] + 8, wb[3] + 4), radius=10, fill=(255, 223, 0, 55))
+                    draw.rounded_rectangle((wb[0] - 8, wb[1], wb[2] + 8, wb[3] + 4), radius=10, fill=(255, 223, 0, 55) if caption_style == "Word-Highlight" else (171, 255, 64, 50))
                 elif caption_style == "Bold-Keywords" and clean in keyword_set:
                     color = (255, 223, 0, 255)
                 draw.text((cursor, y), word, font=font, fill=color, stroke_width=stroke_width, stroke_fill=stroke)
                 cursor += _text_bbox(draw, (0, 0), word + " ", font, stroke_width=stroke_width)[2]
+            words_seen += len(words)
         else:
             draw.text((x, y), line, font=font, fill=fill, stroke_width=stroke_width, stroke_fill=stroke)
         y += line_height
@@ -226,6 +227,21 @@ def _pick_overlay(character_overlay, speaker):
     if isinstance(character_overlay, (list, tuple)):
         return character_overlay[0] if character_overlay else None
     return character_overlay
+
+
+def _scene_highlight_fraction(text, timing_entry=None):
+    words = re.findall(r"[\w\u0900-\u097f]+", text or "")
+    if not words:
+        return 0.0
+    timed_words = []
+    if timing_entry:
+        timed_words = [word for word in timing_entry.get("words") or [] if word.get("word")]
+    if timed_words:
+        return max(0.2, min(1.0, len(timed_words) / len(words)))
+    if len(words) <= 3:
+        return 0.67
+    phrase_words = min(len(words) - 1, max(3, min(8, round(len(words) * 0.45))))
+    return max(0.25, min(0.75, phrase_words / len(words)))
 
 
 def _make_segment(bg_path, bg_video_path, audio_path, caption_path, char_path, output_path, duration, width, height):
@@ -318,9 +334,10 @@ def generate_brainrot_video(dialogues, voice_assignments, title, bg_video_path, 
         for idx, dialogue in enumerate(dialogues):
             if progress_callback:
                 progress_callback(f"Caption/background render {idx + 1}/{total}")
-            duration = timing_data[idx].get("duration", _duration(audio_paths[idx])) if timing_data and idx < len(timing_data) else _duration(audio_paths[idx])
+            timing_entry = timing_data[idx] if timing_data and idx < len(timing_data) else None
+            duration = timing_entry.get("duration", _duration(audio_paths[idx])) if timing_entry else _duration(audio_paths[idx])
             caption_path = os.path.join(tmp, f"caption_{idx:03d}.png")
-            highlight = 1.0 if caption_style not in {"Word-Highlight", "Karaoke-Green"} else min(1.0, max(0.35, duration / max(duration, 1.0)))
+            highlight = 1.0 if caption_style not in {"Word-Highlight", "Karaoke-Green"} else _scene_highlight_fraction(dialogue.get("text", ""), timing_entry)
             create_caption_image(dialogue.get("text", ""), font_path, caption_path, width=width, height=height, caption_style=caption_style, highlight_fraction=highlight, speaker=dialogue.get("speaker"))
             bg_path = scene_background_paths[idx] if scene_background_paths and idx < len(scene_background_paths) else None
             char_path = _pick_overlay(character_overlay, dialogue.get("speaker", "NARRATOR"))

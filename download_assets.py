@@ -48,7 +48,11 @@ def _create_master_font(font_dir):
             return output_path
     except Exception:
         pass
-    fallback = latin_font_path if os.path.exists(latin_font_path) else devanagari_font_path
+    fallback = None
+    if os.path.exists(latin_font_path):
+        fallback = latin_font_path
+    elif os.path.exists(devanagari_font_path):
+        fallback = devanagari_font_path
     if fallback:
         shutil.copyfile(fallback, output_path)
         try:
