@@ -1,0 +1,7 @@
+gradio>=4.44
+pillow>=10.0
+fonttools>=4.45
+python-docx>=1.1
+edge-tts>=6.1
+gTTS>=2.5
+openai-whisper>=20231117; platform_machine != 'aarch64'
