@@ -5,10 +5,11 @@ import zipfile
 import xml.etree.ElementTree as ET
 
 from script_generator import parse_custom_script
-from video_generator import split_text_into_segments
+from video_generator import sanitize_render_text, split_text_into_segments
 
 SPEAKER_LINE = re.compile(r"^\s*[^:\n]{1,40}\s*:\s*\S+")
 SENTENCE_RE = re.compile(r"(?<=[.!?।])\s+")
+SECTION_LABEL_RE = re.compile(r"^\s*[A-Za-z][A-Za-z0-9 _-]{0,38}:\s*$")
 
 
 def extract_docx_text(path):
@@ -67,8 +68,18 @@ def combine_inputs(docx_path=None, raw_text=""):
     return combined, "; ".join(notes) if notes else "raw text used"
 
 
+def clean_story_text(text):
+    cleaned = []
+    for raw in (text or "").splitlines():
+        line = sanitize_render_text(raw).strip()
+        if not line or SECTION_LABEL_RE.match(line):
+            continue
+        cleaned.append(line)
+    return "\n".join(cleaned).strip()
+
+
 def looks_like_custom_script(text):
-    lines = [line for line in (text or "").splitlines() if line.strip()]
+    lines = [line for line in clean_story_text(text).splitlines() if line.strip()]
     if not lines:
         return False
     matches = sum(1 for line in lines if SPEAKER_LINE.match(line))
@@ -76,7 +87,7 @@ def looks_like_custom_script(text):
 
 
 def segment_story(text, max_chars=110, custom_script_mode="Auto"):
-    text = (text or "").strip()
+    text = clean_story_text(text)
     if not text:
         raise ValueError("Story text is empty after extraction.")
     use_script = custom_script_mode == "Custom script" or (custom_script_mode == "Auto" and looks_like_custom_script(text))

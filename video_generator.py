@@ -3,6 +3,7 @@ import re
 import shutil
 import subprocess
 import tempfile
+import unicodedata
 import uuid
 from pathlib import Path
 
@@ -15,8 +16,29 @@ CAPTION_STYLES = [
 ]
 
 
+def sanitize_render_text(text):
+    text = unicodedata.normalize("NFC", str(text or ""))
+    cleaned = []
+    for char in text:
+        code = ord(char)
+        category = unicodedata.category(char)
+        if char in {"\n", "\t"}:
+            cleaned.append(" ")
+            continue
+        if category.startswith("C"):
+            continue
+        if 0xFE00 <= code <= 0xFE0F:
+            continue
+        if 0x1F000 <= code <= 0x1FAFF:
+            continue
+        if 0x2600 <= code <= 0x27BF:
+            continue
+        cleaned.append(char)
+    return re.sub(r"\s+", " ", "".join(cleaned)).strip()
+
+
 def split_text_into_segments(text, max_chars=70):
-    text = re.sub(r"\s+", " ", (text or "").strip())
+    text = re.sub(r"\s+", " ", sanitize_render_text(text).strip())
     if not text:
         return []
     parts = re.split(r"(?<=[.!?।])\s+", text)
@@ -92,6 +114,7 @@ def _wrap_text(draw, text, font, max_width, max_lines=4):
 
 def create_title_image(title, font_path, output_path, width=1080, height=1920, style="Classic"):
     from PIL import Image, ImageDraw
+    title = sanitize_render_text(title)
     img = Image.new("RGBA", (width, height), (0, 0, 0, 0))
     draw = ImageDraw.Draw(img)
     font = _load_font(font_path, max(54, width // 18))
@@ -110,55 +133,54 @@ def create_title_image(title, font_path, output_path, width=1080, height=1920, s
 
 def create_caption_image(text, font_path, output_path, width=1080, height=1920, caption_style="Classic", highlight_fraction=1.0, speaker=None):
     from PIL import Image, ImageDraw
+    text = sanitize_render_text(text)
+    speaker = sanitize_render_text(speaker)
     img = Image.new("RGBA", (width, height), (0, 0, 0, 0))
     draw = ImageDraw.Draw(img)
-    base_size = max(44, min(96, width // 15))
-    if caption_style in {"TikTok-Blast", "Gradient-Pop"}:
-        base_size = max(base_size, width // 13)
+    base_size = max(42, min(88, width // 16))
+    if caption_style in {"TikTok-Blast", "Gradient-Pop", "Bold-Keywords", "Word-Highlight"}:
+        base_size = max(base_size, min(96, width // 14))
     font = _load_font(font_path, base_size)
     small_font = _load_font(font_path, max(24, width // 42))
-    max_width = int(width * (0.84 if width < height else 0.72))
-    lines = _wrap_text(draw, text, font, max_width, max_lines=4)
-    line_height = int(base_size * 1.18)
-    block_width = max((_text_bbox(draw, (0, 0), line, font, stroke_width=4)[2] for line in lines), default=max_width)
+    max_width = int(width * (0.80 if width < height else 0.68))
+    lines = _wrap_text(draw, text, font, max_width, max_lines=3)
+    line_height = int(base_size * 1.22)
+    stroke_width = 5
+    block_width = max((_text_bbox(draw, (0, 0), line, font, stroke_width=stroke_width)[2] for line in lines), default=max_width)
     block_height = len(lines) * line_height
-    y = int(height * (0.69 if width <= height else 0.72))
-    x0 = int((width - min(max_width, block_width + 70)) / 2)
+    y = int((height - block_height) / 2)
+    panel_width = min(int(width * 0.90), int(block_width + base_size * 1.15))
+    x0 = int((width - panel_width) / 2)
     x1 = int(width - x0)
-    pad_y = int(base_size * 0.35)
+    pad_y = int(base_size * 0.32)
 
     panel_fill = None
     fill = (255, 255, 255, 255)
     stroke = (0, 0, 0, 230)
-    stroke_width = 4
     if caption_style == "Modern-Dark":
-        panel_fill = (0, 0, 0, 165)
+        panel_fill = (0, 0, 0, 135)
     elif caption_style == "Yellow-Pop":
         fill = (255, 230, 0, 255)
         stroke_width = 5
     elif caption_style == "TikTok-Blast":
-        panel_fill = (255, 0, 96, 135)
         fill = (255, 255, 255, 255)
         stroke = (0, 221, 255, 230)
     elif caption_style == "Karaoke-Green":
         fill = (225, 235, 220, 255)
-        panel_fill = (0, 0, 0, 125)
     elif caption_style == "Minimal-Shadow":
         stroke = (0, 0, 0, 150)
         stroke_width = 2
     elif caption_style == "Gradient-Pop":
-        panel_fill = (25, 7, 48, 172)
         fill = (255, 118, 219, 255)
         stroke = (40, 255, 244, 230)
         stroke_width = 3
     elif caption_style == "Bold-Keywords":
-        panel_fill = (0, 0, 0, 118)
+        stroke_width = 5
     elif caption_style == "Word-Highlight":
-        panel_fill = (0, 0, 0, 150)
         fill = (235, 235, 235, 255)
 
     if panel_fill:
-        draw.rounded_rectangle((x0 - 18, y - pad_y, x1 + 18, y + block_height + pad_y), radius=max(18, width // 45), fill=panel_fill)
+        draw.rounded_rectangle((x0, y - pad_y, x1, y + block_height + pad_y), radius=max(18, width // 45), fill=panel_fill)
     if speaker and speaker != "NARRATOR":
         draw.text((x0, y - pad_y - max(30, width // 35)), speaker, font=small_font, fill=(255, 255, 255, 210), stroke_width=2, stroke_fill=(0, 0, 0, 160))
 
@@ -173,7 +195,10 @@ def create_caption_image(text, font_path, output_path, width=1080, height=1920, 
         x = int((width - (bbox[2] - bbox[0])) / 2)
         if caption_style in {"Word-Highlight", "Karaoke-Green", "Bold-Keywords"}:
             words = line.split()
-            cursor = x
+            word_widths = [_text_bbox(draw, (0, 0), word, font, stroke_width=stroke_width)[2] for word in words]
+            space_width = _text_bbox(draw, (0, 0), " ", font, stroke_width=stroke_width)[2]
+            line_width = sum(word_widths) + max(0, len(words) - 1) * space_width
+            cursor = int((width - line_width) / 2)
             total_words = max(1, len((text or "").split()))
             highlight_count = max(1, int(total_words * max(0.0, min(1.0, highlight_fraction)))) if caption_style in {"Word-Highlight", "Karaoke-Green"} else 0
             for idx, word in enumerate(words):
@@ -186,7 +211,7 @@ def create_caption_image(text, font_path, output_path, width=1080, height=1920, 
                 elif caption_style == "Bold-Keywords" and clean in keyword_set:
                     color = (255, 223, 0, 255)
                 draw.text((cursor, y), word, font=font, fill=color, stroke_width=stroke_width, stroke_fill=stroke)
-                cursor += _text_bbox(draw, (0, 0), word + " ", font, stroke_width=stroke_width)[2]
+                cursor += word_widths[idx] + space_width
             words_seen += len(words)
         else:
             draw.text((x, y), line, font=font, fill=fill, stroke_width=stroke_width, stroke_fill=stroke)
@@ -197,7 +222,7 @@ def create_caption_image(text, font_path, output_path, width=1080, height=1920, 
 
 
 def generate_line_audio(text, voice, output_path, emotion="neutral"):
-    return generate_emotion_tts(text, voice, output_path, emotion=emotion)
+    return generate_emotion_tts(sanitize_render_text(text), voice, output_path, emotion=emotion)
 
 
 def _duration(path):

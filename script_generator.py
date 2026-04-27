@@ -1,7 +1,10 @@
 import re
 from collections import OrderedDict
 
+from video_generator import sanitize_render_text
+
 SPEAKER_RE = re.compile(r"^\s*([^:\n]{1,40})\s*:\s*(.+?)\s*$")
+SECTION_LABEL_RE = re.compile(r"^\s*[A-Za-z][A-Za-z0-9 _-]{0,38}:\s*$")
 
 
 def detect_language(text):
@@ -18,8 +21,11 @@ def parse_custom_script(script_text):
     dialogues = []
     current = None
     for raw in (script_text or "").splitlines():
-        line = raw.strip()
+        line = sanitize_render_text(raw).strip()
         if not line:
+            continue
+        if SECTION_LABEL_RE.match(line):
+            current = None
             continue
         match = SPEAKER_RE.match(line)
         if match:
