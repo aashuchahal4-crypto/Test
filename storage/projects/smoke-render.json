@@ -1,0 +1,52 @@
+{
+  "id": "smoke-render",
+  "prompt": "Test local video",
+  "video_type": "short",
+  "duration": 9,
+  "style": "cinematic",
+  "language": "en-US",
+  "voice": "auto",
+  "created_at": "now",
+  "generate_images": false,
+  "scenes": [
+    {
+      "id": 1,
+      "duration": 3.0,
+      "visual_prompt": "cinematic robot in a local studio with warm light",
+      "voice_text": "This is the hook for local video.",
+      "subtitle": "Local video hook",
+      "camera_movement": "slow_zoom_in",
+      "transition": "fade",
+      "transition_duration": 0.25,
+      "effects": "slow_zoom",
+      "style": "cinematic",
+      "image_path": null
+    },
+    {
+      "id": 2,
+      "duration": 3.0,
+      "visual_prompt": "creator editing timeline on laptop with neon accents",
+      "voice_text": "Images, voice, and subtitles stay offline.",
+      "subtitle": "Everything stays offline",
+      "camera_movement": "pan_right",
+      "transition": "push",
+      "transition_duration": 0.25,
+      "effects": "caption_pop",
+      "style": "cinematic",
+      "image_path": null
+    },
+    {
+      "id": 3,
+      "duration": 3.0,
+      "visual_prompt": "finished vertical video preview glowing on desktop",
+      "voice_text": "Then FFmpeg renders a finished MP4.",
+      "subtitle": "FFmpeg renders MP4",
+      "camera_movement": "slow_zoom_out",
+      "transition": "flash",
+      "transition_duration": 0.25,
+      "effects": "pulse",
+      "style": "cinematic",
+      "image_path": null
+    }
+  ]
+}

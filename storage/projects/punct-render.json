@@ -1,0 +1,52 @@
+{
+  "id": "punct-render",
+  "prompt": "Test punctuation",
+  "video_type": "short",
+  "duration": 9,
+  "style": "neon",
+  "language": "en-US",
+  "voice": "auto",
+  "created_at": "now",
+  "generate_images": false,
+  "scenes": [
+    {
+      "id": 1,
+      "duration": 3.0,
+      "visual_prompt": "neon creator desk, laptop, local AI dashboard, cinematic composition, readable captions",
+      "voice_text": "For creators, this is local, fast, and private.",
+      "subtitle": "For creators, this is local, fast, and private.",
+      "camera_movement": "slow_zoom_in",
+      "transition": "fade",
+      "transition_duration": 0.25,
+      "effects": "caption_pop",
+      "style": "neon",
+      "image_path": null
+    },
+    {
+      "id": 2,
+      "duration": 3.0,
+      "visual_prompt": "neon timeline editor, glowing scene cards, motion graphics, strong foreground",
+      "voice_text": "Scenes, subtitles, and motion are synced automatically.",
+      "subtitle": "Scenes, subtitles, and motion are synced automatically.",
+      "camera_movement": "pan_right",
+      "transition": "push",
+      "transition_duration": 0.25,
+      "effects": "slow_zoom",
+      "style": "neon",
+      "image_path": null
+    },
+    {
+      "id": 3,
+      "duration": 3.0,
+      "visual_prompt": "finished vertical video export, colorful waveform, cinematic neon light",
+      "voice_text": "Then FFmpeg renders everything into one MP4.",
+      "subtitle": "Then FFmpeg renders everything into one MP4.",
+      "camera_movement": "slow_zoom_out",
+      "transition": "flash",
+      "transition_duration": 0.25,
+      "effects": "pulse",
+      "style": "neon",
+      "image_path": null
+    }
+  ]
+}
