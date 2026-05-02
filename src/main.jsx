@@ -36,6 +36,7 @@ const call = async (command, payload = {}) => {
 };
 
 const imageEngineFallback = [
+  { id: 'worker', label: 'Worker Image Service (primary)', available: true },
   { id: 'pollinations', label: 'Pollinations (fast)', available: true },
   { id: 'cloudflare', label: 'Cloudflare AI (stable)', available: false },
   { id: 'replicate', label: 'Replicate (multi-model)', available: false },
@@ -64,7 +65,7 @@ function App() {
   const [voice, setVoice] = useState('auto');
   const [project, setProject] = useState(sampleProject);
   const [generateImages, setGenerateImages] = useState(false);
-  const [imageEngine, setImageEngine] = useState('pollinations');
+  const [imageEngine, setImageEngine] = useState('worker');
   const [imageEngines, setImageEngines] = useState(imageEngineFallback);
   const [status, setStatus] = useState('Ready. Foundry Local will select the best available QNN NPU model.');
   const [aiStatus, setAiStatus] = useState({ backend: 'Foundry Local', model: 'Detecting...', device: 'NPU (QNN)' });
@@ -106,7 +107,7 @@ function App() {
       const text = await call('image_engines_status');
       const parsed = JSON.parse(text);
       const engines = parsed.image_engines?.engines || parsed.engines;
-      const defaultEngine = parsed.image_engines?.default || parsed.default || 'pollinations';
+      const defaultEngine = parsed.image_engines?.default || parsed.default || 'worker';
       if (Array.isArray(engines) && engines.length) {
         setImageEngines(engines);
         setImageEngine(current => engines.some(engine => engine.id === current) ? current : defaultEngine);

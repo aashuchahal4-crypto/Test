@@ -50,7 +50,7 @@ Device: NPU (QNN)
 1. Enter an idea prompt.
 2. Pick video type, duration, style, language, and voice.
 3. Click `Generate scene JSON on NPU`.
-4. Pick an image engine: Pollinations, Cloudflare AI, Replicate, Puter.js, or Templates.
+4. Pick an image engine: Worker Image Service, Pollinations, Cloudflare AI, Replicate, Puter.js, or Templates.
 5. Edit scene durations, visual prompts, narration, transitions, and effects.
 6. Optionally click `Generate image previews` or enable `Generate scene images during render`.
 7. Click `Render MP4 on CPU`.
@@ -65,7 +65,7 @@ python3 core/pipeline.py script --prompt "My video idea"
 python3 core/pipeline.py hooks --prompt "My video idea"
 python3 core/pipeline.py captions --text "Short script text"
 python3 core/pipeline.py viral --text "Rewrite this hook"
-python3 core/pipeline.py images --project storage/projects/example.json --engine pollinations
+python3 core/pipeline.py images --project storage/projects/example.json --engine worker
 python3 core/pipeline.py render --project storage/projects/example.json --out storage/outputs/my-video.mp4
 ```
 
@@ -91,6 +91,7 @@ The renderer uses these automatically. If folders are empty, it uses generated C
 
 ## Image engine credentials
 
+- Worker Image Service: posts each scene prompt to `IMAGE_WORKER_URL`, defaulting to `https://patient-tree-3f33.aashuchahal4.workers.dev`.
 - Pollinations: no app-side credentials.
 - Cloudflare AI: set `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN`.
 - Replicate: set `REPLICATE_API_TOKEN`; optionally set `REPLICATE_MODEL`.

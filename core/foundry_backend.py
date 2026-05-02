@@ -439,10 +439,13 @@ Return ONLY valid JSON. No markdown. No explanation. The JSON must match this sc
 
 Rules:
 - Every scene must be about the user's request/topic, not generic local AI content.
+- Build the scenes sequentially: scene 1 opens the story, middle scenes develop it, and the final scene resolves it.
+- Each visual_prompt must describe only that scene's exact moment and must match the same scene's voice_text/subtitle.
 - Use {lang} for every voice_text value.
 - subtitle must be shorter than voice_text and readable in under 2 seconds.
 - Write voice_text so it sounds natural for a {voice_label}.
 - visual_prompt must be optimized for image generation: concrete nouns, subject, setting, lighting, lens/composition, style words, no logos, no embedded text, no UI labels.
+- Do not reuse the same visual_prompt across scenes; each prompt must create a distinct image for that scene.
 - Return exactly {scene_count} scenes.
 - Each scene duration should be about {round(duration / scene_count, 2)} seconds.
 - All durations combined must sum to exactly {duration} seconds.

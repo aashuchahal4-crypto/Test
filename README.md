@@ -18,14 +18,16 @@ A model is eligible only when `Device = NPU` or its name contains `qnn-npu`.
 
 The app exposes these image engines in order:
 
-1. Pollinations (fast)
-2. Cloudflare AI (stable)
-3. Replicate (multi-model)
-4. Puter.js (frontend fallback)
-5. Templates (always safe)
+1. Worker Image Service (primary)
+2. Pollinations (fast)
+3. Cloudflare AI (stable)
+4. Replicate (multi-model)
+5. Puter.js (frontend fallback)
+6. Templates (always safe)
 
 Configuration:
 
+- Worker Image Service posts each scene prompt to `IMAGE_WORKER_URL`, defaulting to `https://patient-tree-3f33.aashuchahal4.workers.dev`.
 - Pollinations works without app-side credentials.
 - Cloudflare AI requires `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN`. Override the model with `CLOUDFLARE_IMAGE_MODEL` if needed.
 - Replicate requires `REPLICATE_API_TOKEN`. Override the model with `REPLICATE_MODEL`.
@@ -86,7 +88,7 @@ python3 core/pipeline.py plan --prompt "Explain local AI video generation" --dur
 Generate image previews:
 
 ```bash
-python3 core/pipeline.py images --project storage/projects/example.json --engine pollinations
+python3 core/pipeline.py images --project storage/projects/example.json --engine worker
 ```
 
 Render from a saved project JSON:

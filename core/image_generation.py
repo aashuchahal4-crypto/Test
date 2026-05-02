@@ -23,6 +23,14 @@ HEIGHT = int(os.environ.get("IMAGE_HEIGHT", "1280"))
 
 IMAGE_ENGINES = [
     {
+        "id": "worker",
+        "name": "Worker Image Service",
+        "label": "Worker Image Service (primary)",
+        "kind": "cloud",
+        "requires": [],
+        "description": "Primary unlimited scene-image service. Posts each scene prompt to IMAGE_WORKER_URL.",
+    },
+    {
         "id": "pollinations",
         "name": "Pollinations",
         "label": "Pollinations (fast)",
@@ -64,7 +72,8 @@ IMAGE_ENGINES = [
     },
 ]
 
-DEFAULT_ENGINE = os.environ.get("IMAGE_ENGINE", "pollinations").strip().lower() or "pollinations"
+DEFAULT_ENGINE = os.environ.get("IMAGE_ENGINE", "worker").strip().lower() or "worker"
+IMAGE_WORKER_URL = os.environ.get("IMAGE_WORKER_URL", "https://patient-tree-3f33.aashuchahal4.workers.dev")
 CLOUDFLARE_MODEL = os.environ.get("CLOUDFLARE_IMAGE_MODEL", "@cf/bytedance/stable-diffusion-xl-lightning")
 REPLICATE_MODEL = os.environ.get("REPLICATE_MODEL", "black-forest-labs/flux-schnell")
 
@@ -90,11 +99,11 @@ def image_engines_status() -> dict[str, Any]:
             "missing": missing,
             "selected": engine["id"] == DEFAULT_ENGINE,
         })
-    return {"default": DEFAULT_ENGINE if _engine(DEFAULT_ENGINE) else "pollinations", "engines": engines}
+    return {"default": DEFAULT_ENGINE if _engine(DEFAULT_ENGINE) else "worker", "engines": engines}
 
 
 def _engine(engine_id: str | None) -> dict[str, Any] | None:
-    requested = (engine_id or DEFAULT_ENGINE or "pollinations").strip().lower()
+    requested = (engine_id or DEFAULT_ENGINE or "worker").strip().lower()
     return next((engine for engine in IMAGE_ENGINES if engine["id"] == requested), None)
 
 
@@ -120,6 +129,39 @@ def _download(url: str, out: Path, headers: dict[str, str] | None = None, timeou
     if len(data) < 100:
         raise ImageGenerationError("Image response was empty")
     out.write_bytes(data)
+
+
+def _worker(prompt: str, out: Path, seed: int) -> None:
+    payload = json.dumps({"prompt": prompt, "seed": seed, "width": WIDTH, "height": HEIGHT}).encode("utf-8")
+    request = urllib.request.Request(
+        IMAGE_WORKER_URL,
+        data=payload,
+        headers={
+            "Content-Type": "application/json",
+            "Accept": "image/*,application/json",
+            "Origin": "null",
+            "User-Agent": "Mozilla/5.0 LocalAIVideoStudio/1.0",
+        },
+        method="POST",
+    )
+    data = _urlopen(request, timeout=180)
+    if len(data) < 100:
+        raise ImageGenerationError("Worker image service returned an empty image")
+    try:
+        parsed = json.loads(data.decode("utf-8"))
+        image_b64 = parsed.get("image") or parsed.get("b64_json") or parsed.get("base64")
+        if image_b64:
+            out.write_bytes(base64.b64decode(image_b64))
+            return
+        image_url = parsed.get("url") or parsed.get("image_url")
+        if image_url:
+            _download(str(image_url), out)
+            return
+        raise ImageGenerationError(parsed.get("error") or "Worker image service returned JSON without an image")
+    except UnicodeDecodeError:
+        out.write_bytes(data)
+    except json.JSONDecodeError:
+        out.write_bytes(data)
 
 
 def _pollinations(prompt: str, out: Path, seed: int) -> None:
@@ -231,7 +273,9 @@ def _template(scene: Any, out: Path, seed: int) -> None:
 
 
 def _write_with_engine(engine_id: str, prompt: str, out: Path, seed: int, scene: Any) -> str:
-    if engine_id == "pollinations":
+    if engine_id == "worker":
+        _worker(prompt, out, seed)
+    elif engine_id == "pollinations":
         _pollinations(prompt, out, seed)
     elif engine_id == "cloudflare":
         _cloudflare(prompt, out, seed)
@@ -246,7 +290,7 @@ def _write_with_engine(engine_id: str, prompt: str, out: Path, seed: int, scene:
 
 
 def generate_scene_images(project: Any, engine: str | None = None, progress_callback: Callable[[int, str], None] | None = None) -> None:
-    selected = _engine(engine or getattr(project, "image_engine", None)) or _engine(DEFAULT_ENGINE) or _engine("pollinations")
+    selected = _engine(engine or getattr(project, "image_engine", None)) or _engine(DEFAULT_ENGINE) or _engine("worker")
     engine_id = str(selected["id"])
     scenes = list(getattr(project, "scenes", []) or [])
     if not scenes:
@@ -258,7 +302,8 @@ def generate_scene_images(project: Any, engine: str | None = None, progress_call
         prompt = _prompt(scene, str(getattr(project, "style", "cinematic")))
         seed = int(hashlib.sha256(f"{getattr(project, 'id', 'project')}|{index}|{prompt}".encode("utf-8")).hexdigest()[:8], 16)
         cache_key = hashlib.sha256(f"{engine_id}|{prompt}|{WIDTH}|{HEIGHT}|{seed}".encode("utf-8")).hexdigest()[:16]
-        cached = out_dir / f"scene_{index:02d}_{engine_id}_{cache_key}.png"
+        extension = "jpg" if engine_id == "worker" else "png"
+        cached = out_dir / f"scene_{index:02d}_{engine_id}_{cache_key}.{extension}"
         if progress_callback:
             progress_callback(int(3 + ((index - 1) / total) * 12), f"Generating image {index} of {total} with {selected['label']}")
         if not cached.exists() or cached.stat().st_size < 100:

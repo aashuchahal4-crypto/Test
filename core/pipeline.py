@@ -770,7 +770,7 @@ def add_ai_args(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--language", default="en")
     parser.add_argument("--voice", choices=["auto", "male", "female"], default="auto")
     parser.add_argument("--generate-images", action="store_true", help="Generate per-scene images before rendering")
-    parser.add_argument("--image-engine", default=DEFAULT_ENGINE, choices=["pollinations", "cloudflare", "replicate", "puter", "templates"], help="Image engine to use when --generate-images is enabled")
+    parser.add_argument("--image-engine", default=DEFAULT_ENGINE, choices=["worker", "pollinations", "cloudflare", "replicate", "puter", "templates"], help="Image engine to use when --generate-images is enabled")
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -797,7 +797,7 @@ def build_parser() -> argparse.ArgumentParser:
     sub.choices["render"].add_argument("--out", help="Output MP4 path")
     images = sub.add_parser("images")
     images.add_argument("--project", required=True, help="Path to editable project JSON")
-    images.add_argument("--engine", default=DEFAULT_ENGINE, choices=["pollinations", "cloudflare", "replicate", "puter", "templates"], help="Image engine for scene previews")
+    images.add_argument("--engine", default=DEFAULT_ENGINE, choices=["worker", "pollinations", "cloudflare", "replicate", "puter", "templates"], help="Image engine for scene previews")
     images.set_defaults(func=command_images)
     return parser
 
