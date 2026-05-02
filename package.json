@@ -1,0 +1,26 @@
+{
+  "name": "local-ai-video-studio",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Local-first Snapdragon X AI video studio using Microsoft Foundry Local QNN NPU models and CPU FFmpeg rendering.",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "vite build",
+    "tauri": "tauri",
+    "tauri:dev": "tauri dev",
+    "tauri:build": "tauri build",
+    "demo": "python3 core/pipeline.py render --prompt \"Explain why local AI video generation matters\" --duration 24 --style neon --out storage/outputs/demo.mp4"
+  },
+  "dependencies": {
+    "@tauri-apps/api": "^2.5.0",
+    "@tauri-apps/plugin-opener": "^2.2.6",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.5.0",
+    "@vitejs/plugin-react": "^4.4.1",
+    "vite": "^6.3.5"
+  }
+}
