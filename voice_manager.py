@@ -13,7 +13,7 @@ from script_generator import DialogueLine
 
 FEMALE_WORDS = {"mother", "mom", "mum", "girl", "woman", "sister", "aunt", "queen", "wife", "daughter", "lady", "princess", "grandma", "teacher"}
 MALE_WORDS = {"father", "dad", "boy", "man", "brother", "uncle", "king", "husband", "son", "sir", "prince", "grandpa", "police"}
-FEMALE_NAMES = {"alexa", "alice", "ananya", "anna", "aisha", "emma", "eva", "mia", "sophia", "olivia", "ava", "isabella", "mary", "sarah", "priya", "neha", "riya", "sita", "maria", "jessica"}
+FEMALE_NAMES = {"alexa", "alice", "ananya", "anna", "aisha", "emma", "eva", "maya", "mia", "sophia", "olivia", "ava", "isabella", "mary", "sarah", "priya", "neha", "riya", "sita", "maria", "jessica"}
 MALE_NAMES = {"alex", "aarav", "adam", "ben", "bob", "david", "ethan", "jack", "john", "liam", "michael", "noah", "oliver", "ram", "rahul", "raj", "sam", "tom", "william"}
 
 
@@ -41,10 +41,13 @@ def infer_gender(name: str, explicit: str | None = None, index: int = 0) -> str:
             return "male"
         if low in {"neutral", "unknown", "other", "nonbinary", "non-binary"}:
             return "neutral"
-    tokens = set(re.findall(r"[a-z]+", (name or "").lower()))
-    if tokens & FEMALE_WORDS or (tokens and next(iter(tokens)) in FEMALE_NAMES) or (name or "").lower() in FEMALE_NAMES:
+    normalized = (name or "").lower().strip()
+    tokens = re.findall(r"[a-z]+", normalized)
+    token_set = set(tokens)
+    first_token = tokens[0] if tokens else ""
+    if token_set & FEMALE_WORDS or first_token in FEMALE_NAMES or normalized in FEMALE_NAMES:
         return "female"
-    if tokens & MALE_WORDS or (tokens and next(iter(tokens)) in MALE_NAMES) or (name or "").lower() in MALE_NAMES:
+    if token_set & MALE_WORDS or first_token in MALE_NAMES or normalized in MALE_NAMES:
         return "male"
     return "female" if index % 2 else "male"
 
