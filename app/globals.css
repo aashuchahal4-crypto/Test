@@ -1,0 +1,14 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root { color-scheme: light; }
+.dark { color-scheme: dark; }
+html { scroll-behavior: smooth; }
+body { min-height: 100vh; background: #f8fafc; color: #0f172a; }
+.dark body { background: #020617; color: #e2e8f0; }
+.sketch-grid { background-image: linear-gradient(rgba(37,99,235,.08) 1px, transparent 1px), linear-gradient(90deg, rgba(37,99,235,.08) 1px, transparent 1px); background-size: 28px 28px; }
+.sketch-border { border: 2px solid currentColor; box-shadow: 5px 5px 0 rgba(15, 23, 42, .14); }
+.dark .sketch-border { box-shadow: 5px 5px 0 rgba(148, 163, 184, .18); }
+.stroke-reveal path, .stroke-reveal line, .stroke-reveal circle, .stroke-reveal rect, .stroke-reveal polyline, .stroke-reveal polygon { stroke-dasharray: 1; stroke-dashoffset: 1; animation: draw 1.6s ease forwards; }
+* { box-sizing: border-box; }

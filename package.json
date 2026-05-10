@@ -1,0 +1,38 @@
+{
+  "name": "sketchflow-ai",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "remotion:studio": "remotion studio remotion/root.tsx",
+    "remotion:render": "remotion render remotion/root.tsx SketchFlowExplainer out/sketchflow.mp4"
+  },
+  "dependencies": {
+    "@remotion/bundler": "latest",
+    "@remotion/renderer": "latest",
+    "clsx": "latest",
+    "framer-motion": "latest",
+    "gsap": "latest",
+    "lucide-react": "latest",
+    "next": "^15.5.18",
+    "react": "19.0.0",
+    "react-dom": "19.0.0",
+    "remotion": "latest",
+    "tailwind-merge": "latest"
+  },
+  "devDependencies": {
+    "@types/node": "latest",
+    "@types/react": "latest",
+    "@types/react-dom": "latest",
+    "autoprefixer": "latest",
+    "eslint": "latest",
+    "eslint-config-next": "^15.5.18",
+    "postcss": "latest",
+    "tailwindcss": "^3.4.17",
+    "typescript": "latest"
+  }
+}
