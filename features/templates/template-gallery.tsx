@@ -1,0 +1,11 @@
+import { Palette, Ratio, Wand2 } from 'lucide-react';
+import { AppShell } from '@/components/app-shell';
+import { Badge, Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { templates } from '@/lib/templates';
+
+export function TemplateGallery() {
+  return <AppShell><main className="mx-auto max-w-7xl px-4 py-10"><div className="flex flex-wrap items-end justify-between gap-4"><div><p className="text-sm font-black uppercase tracking-[.25em] text-blue-600">Template gallery</p><h1 className="mt-2 text-4xl font-black">Reusable typed whiteboard styles</h1><p className="mt-2 max-w-2xl text-slate-600 dark:text-slate-300">Each card maps to a TemplateConfig with aspect ratios, background, stroke style, typography, defaults, and animation presets.</p></div><Button href="/editor">Use in editor</Button></div>
+    <div className="mt-8 grid gap-5 md:grid-cols-2">{templates.map((template) => <Card key={template.id} className="overflow-hidden p-0"><div className="sketch-grid h-52 p-6" style={{ background: template.background.type === 'gradient' ? template.background.value : template.background.value, color: template.strokeStyle.color }}><div className="flex h-full flex-col justify-between rounded-3xl border-2 border-current bg-white/35 p-5 backdrop-blur-sm dark:bg-slate-950/25"><div><Badge>{template.id}</Badge><h2 className="mt-3 text-3xl font-black" style={{ color: template.typography.color }}>{template.name}</h2></div><div className="flex gap-3"><Wand2 /><span className="font-bold">Draw · Marker · Timeline</span></div></div></div><div className="p-5"><p className="text-sm leading-6 text-slate-600 dark:text-slate-300">{template.description}</p><div className="mt-4 grid gap-3 text-sm sm:grid-cols-3"><span className="flex items-center gap-2"><Ratio className="h-4 w-4" />{template.aspectRatios.join(', ')}</span><span className="flex items-center gap-2"><Palette className="h-4 w-4" />{template.strokeStyle.texture}</span><span>{template.sceneDefaults.duration}s default</span></div><div className="mt-4 flex flex-wrap gap-2">{template.animationPresets.map((preset) => <Badge key={preset}>{preset}</Badge>)}</div></div></Card>)}</div>
+  </main></AppShell>;
+}
