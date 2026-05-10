@@ -18,7 +18,7 @@
     "framer-motion": "latest",
     "gsap": "latest",
     "lucide-react": "latest",
-    "next": "15.3.2",
+    "next": "^15.5.18",
     "react": "19.0.0",
     "react-dom": "19.0.0",
     "remotion": "latest",
@@ -30,7 +30,7 @@
     "@types/react-dom": "latest",
     "autoprefixer": "latest",
     "eslint": "latest",
-    "eslint-config-next": "15.3.2",
+    "eslint-config-next": "^15.5.18",
     "postcss": "latest",
     "tailwindcss": "^3.4.17",
     "typescript": "latest"
